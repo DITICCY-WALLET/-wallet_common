@@ -2,14 +2,14 @@ from enum import Enum, unique
 
 
 @unique
-class TxStatus(Enum):
+class TxStatusEnum(Enum):
     INVALID = 0
     VALID = 1
     UNKNOWN = 2
 
 
 @unique
-class TxTypeEum(Enum):
+class TxTypeEnum(Enum):
     # 充值
     DEPOSIT = 0
     # 提现
@@ -27,3 +27,15 @@ class SendEnum(Enum):
     NOT_PUSH = 0
     PUSHED = 1
     NEEDLESS = 2
+
+
+@unique
+class AddressTypeEnum(Enum):
+    DEPOSIT = 0
+    WITHDRAW = 1
+    COLLECTION = 2
+    COLD = 3
+
+
+if __name__ == '__main__':
+    print(AddressTypeEnum.DEPOSIT.value)

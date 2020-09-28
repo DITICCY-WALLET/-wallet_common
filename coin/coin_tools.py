@@ -1,6 +1,6 @@
 import json
 from digit import digit
-from enumer.coin_enum import TxStatus
+from enumer.coin_enum import TxStatusEnum
 
 
 class BlockHeight(object):
@@ -49,7 +49,7 @@ class BlockHeight(object):
 
 class Tx(object):
     def __init__(self, block_height, block_hash, tx_hash, sender, receiver, value, gas, gas_price, nonce, data,
-                 contract, status=TxStatus.UNKNOWN.value):
+                 contract, status=TxStatusEnum.UNKNOWN.value):
         self.block_height = block_height
         self.block_hash = block_hash
         self.tx_hash = tx_hash
@@ -75,6 +75,13 @@ class TxReceipt(object):
         self.status = status
         self.gas_used = gas_used
 
+
+class Block(object):
+    def __init__(self, height, hash, timestamp, transactions):
+        self.height = height
+        self.hash = hash
+        self.timestamp = timestamp
+        self.transactions = transactions
 
 
 if __name__ == '__main__':

@@ -21,3 +21,7 @@ class RsaCryptoError(Exception):
 
 class SyncError(Exception):
     pass
+
+
+class PasswordError(Exception):
+    pass

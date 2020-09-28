@@ -1,6 +1,6 @@
-from coin.coin_tools import Tx, TxReceipt
+from coin.coin_tools import Tx, TxReceipt, Block
 from digit import digit
-from enumer.coin_enum import TxStatus
+from enumer.coin_enum import TxStatusEnum
 
 
 class EthereumResolver(object):
@@ -13,6 +13,8 @@ class EthereumResolver(object):
     DEFAULT_GAS = 100000
     # 15G
     DEFAULT_GAS_PRICE = 15 * 1000 * 1000 * 1000
+    # ZERO ADDRESS
+    ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
     @classmethod
     def get_transfer_body(cls, sender=None, receiver=None, gas: int = None, gas_price: int = None, value: int = 0,
@@ -28,7 +30,6 @@ class EthereumResolver(object):
             "gas": digit.int_to_hex(gas),
             # K M G  -> 10G
             "gasPrice": digit.int_to_hex(gas_price),
-            "data": "0x0"
         }
         if contract is not None:
             body['to'] = digit.add_0x(contract)
@@ -38,13 +39,13 @@ class EthereumResolver(object):
     @classmethod
     def get_balance_body(cls, address, contract):
         return {
-            "from": cls.get_address(address),
+            "from": cls.get_address(cls.ZERO_ADDRESS),
             "to": cls.get_address(contract),
             "value": digit.int_to_hex(0),
             "gas": digit.int_to_hex(cls.DEFAULT_GAS),
             # K M G  -> 10G
             "gasPrice": digit.int_to_hex(cls.DEFAULT_GAS_PRICE),
-            "data": cls.TRANSFER_ABI + cls.get_address(address, contract)
+            "data": cls.GET_BALANCE_ABI + cls.get_address(address, contract)
         }
 
     @classmethod
@@ -76,9 +77,9 @@ class EthereumResolver(object):
         :return: hex or hex not have ox
         """
         if contract is None:
-            return digit.hex_to_int(value)
+            return digit.int_to_hex(value)
         real_value = digit.int_to_hex(value, has_0x=False)
-        return real_value.zfill(cls.TRANSFER_VALUE_LENGTH - len(real_value))
+        return real_value.zfill(cls.TRANSFER_VALUE_LENGTH)
 
     @classmethod
     def resolver_transaction(cls, tx):
@@ -90,13 +91,13 @@ class EthereumResolver(object):
         block_height = digit.hex_to_int(tx['blockNumber'])
         block_hash = tx['blockHash']
         tx_hash = tx['hash']
-        sender = tx['from']
-        receiver = tx['to']
+        sender = cls.get_address(tx['from'])
+        receiver = cls.get_address(tx['to'])
         value = digit.hex_to_int(tx['value'])
         gas = digit.hex_to_int(tx['gas'])
         gas_price = digit.hex_to_int(tx['gasPrice'])
         nonce = digit.hex_to_int(tx['nonce'])
-        status = TxStatus.UNKNOWN.value
+        status = TxStatusEnum.UNKNOWN.value
         data = None
         contract = None
         # 去掉开头 0x
@@ -106,8 +107,8 @@ class EthereumResolver(object):
             contract = tx['to']
             abi_length = len(cls.TRANSFER_ABI)
             abi, address, amount = (_input[0:abi_length], _input[abi_length:abi_length + cls.ADDRESS_FULL_LENGTH],
-                                    _input[abi_length + cls.ADDRESS_FULL_LENGTH:cls.TRANSFER_VALUE_LENGTH])
-            receiver = address[cls.ADDRESS_FILL_LENGTH:]
+                                    _input[abi_length + cls.ADDRESS_FULL_LENGTH:])
+            receiver = cls.get_address(address[cls.ADDRESS_FILL_LENGTH:])
             value = digit.hex_to_int(amount)
         return Tx(block_height, block_hash, tx_hash, sender, receiver, value, gas, gas_price, nonce, data, contract,
                   status)
@@ -123,6 +124,19 @@ class EthereumResolver(object):
         status = digit.hex_to_int(receipt['status'])
         gas_used = digit.hex_to_int(receipt['gasUsed'])
         return TxReceipt(block_height, block_hash, tx_hash, sender, receiver, contract, status, gas_used)
+
+    @classmethod
+    def resolver_block(cls, block, detail=True):
+        """不包含交易"""
+        block_height = digit.hex_to_int(block['number'])
+        block_hash = block['hash']
+        block_time = digit.hex_to_int(block['timestamp'])
+        if detail:
+            transactions = [cls.resolver_transaction(tx) for tx in block['transactions']]
+        else:
+            transactions = []
+
+        return Block(height=block_height, hash=block_hash, timestamp=block_time, transactions=transactions)
 
 
 if __name__ == '__main__':

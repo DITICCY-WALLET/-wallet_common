@@ -32,6 +32,7 @@ out_data_missing = {"code": 1030, 'msg': "缺少必要数据"}
 # ***** 币种基础数据 ***** 1040 - 1049 *****
 coin_missing = {"code": 1040, 'msg': "未找到该币种"}
 rpc_service_error = {"code": 1041, 'msg': "请求RPC服务器错误"}
+rpc_block_not_found = {"code": 1042, 'msg': "区块未找到"}
 
 # ***** 币种错误 ***** 1100 - 1199 *****
 balance_rpc_error = {"code": 1100, 'msg': "请求余额RPC失败"}
@@ -49,4 +50,7 @@ project_miss = {"code": 1200, 'msg': "未找到项目方数据"}
 project_passphrase_miss = {"code": 1201, 'msg': "项目未设置任何币种密码, 请先设置币种密码"}
 coin_passphrase_miss = {"code": 1202, 'msg': "当前币种未设置密码, 请先设置币种密码"}
 coin_passphrase_error = {"code": 1203, 'msg': "密码缺少"}
+
+# ***** 发送交易明确性错误 ***** 1300 - 1399 *****
+send_fee_insufficient = {"code": 1301, 'msg': "手续费不足"}
 

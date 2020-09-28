@@ -146,15 +146,16 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
             return True
         return False
 
-    def send_transaction(self, sender, receiver, value, passphrase, gas=None, gas_price=None, fee=None,
-                         contract=None, comment=None, **kwargs):
+    def send_transaction(self, sender: str, receiver: str, value: int, passphrase: str, gas: int = None,
+                         gas_price: int = None, fee: int = None,
+                         contract: str = None, comment: str = None, **kwargs):
         """目前只支持单交易发送, 暂时没有想到更好的数据结构"""
         method = 'personal_signAndSendTransaction'
         if gas is None:
             gas = 21000
         if gas_price is None:
             gas_price = digit.hex_to_int(self.gas_price())
-        params = EthereumResolver.get_transfer_body(sender, receiver, gas, gas_price, value, contract)
+        params = EthereumResolver.get_transfer_body(sender, receiver, int(gas), int(gas_price), value, contract)
         payload = self.get_params(params, passphrase)
         return self._single_post(method, payload, ignore_err=False)
 

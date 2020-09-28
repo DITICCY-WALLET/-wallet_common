@@ -15,6 +15,8 @@ class RsaCrypto(object):
 
     def import_key(self, private_key):
         self.key_pair = RSA.importKey(private_key)
+        self.private_key = self.key_pair.exportKey()
+        self.public_key = self.key_pair.publickey()
 
     def import_public_key(self, public_key):
         self.public_key = public_key
