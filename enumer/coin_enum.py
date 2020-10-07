@@ -17,7 +17,7 @@ class TxTypeEnum(Enum):
     # 归集
     COLLECTION = 2
     # 补充手续费
-    EXTRA = 3
+    RENDER = 3
     # 用户地址向非归集地址归集
     ERROR = 9
 

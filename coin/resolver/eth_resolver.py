@@ -246,3 +246,7 @@ if __name__ == '__main__':
         },
         "id": 3
     }
+
+    print(EthereumResolver.get_transfer_body(sender='0x5c8d1a6e68dfd5a1b51c59c5de6749b939627404',
+                                             receiver='0x5c8d1a6e68dfd5a1b51c59c5de6749b939627404',
+                                             value=1000, contract='0xbed2d19d9551f6666c31ce2a72eb4533262d5dab'))
