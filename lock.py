@@ -26,8 +26,13 @@ class ProcessLock(metaclass=abc.ABCMeta):
         try:
             fcntl.flock(self.fb, fcntl.LOCK_EX | fcntl.LOCK_NB)
             self.func()
+        except BlockingIOError as e:
+            if e.args[0] == 35 or 'Resource temporarily unavailable' in e.args[1]:
+                self.logger.warning("{} 文件锁已加, 无法多重入锁".format(self.func.__name__))
+            else:
+                self.logger.error("文件锁加锁失败, 原因: {}".format(e))
         except Exception as e:
-            self.logger.error("文件锁加锁失败, 原因: {}", e)
+            self.logger.error("文件锁加锁失败, 原因: {}".format(e))
 
     def unlock(self):
         if self.fb is not None:

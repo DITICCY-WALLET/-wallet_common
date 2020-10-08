@@ -5,7 +5,6 @@ try:
     from config.config import config
     LOG_CONF = config.LOG_CONF
     logger_name = config.logger_name if hasattr(config, 'logger_name') else 'default'
-    import fskaddjfklaa
 except ImportError:
     LOG_CONF = {'version': 1,
                 'disable_existing_loggers': False,
