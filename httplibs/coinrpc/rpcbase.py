@@ -37,7 +37,8 @@ class RpcBase(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def send_transaction(self, sender, receiver, value, passphrase, gas=None, gas_price=None, fee=None, contract=None, comment=None, **kwargs):
+    def send_transaction(self, sender, receiver, value, passphrase, gas=None, gas_price=None,
+                         fee=None, contract=None, comment=None, **kwargs):
         pass
 
     @abstractmethod
@@ -72,11 +73,13 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
         number_method = 'eth_blockNumber'
         sync, number = self._diff_post([sync_method, number_method], [None, None])
         if sync:
-            block_height = BlockHeight(digit.hex_to_int(sync['currentBlock']), digit.hex_to_int(sync['highestBlock']))
+            block_height = BlockHeight(digit.hex_to_int(sync['currentBlock']),
+                                       digit.hex_to_int(sync['highestBlock']))
         elif number:
             block_height = BlockHeight(digit.hex_to_int(number), digit.hex_to_int(number))
         else:
-            self.logger.error('get_block_height 请求, 两个方式均未获取到正常拿. sync: {} number: {}'.format(sync, number))
+            self.logger.error(
+                'get_block_height 请求, 两个方式均未获取到正常拿. sync: {} number: {}'.format(sync, number))
             raise JsonRpcError(code=1,
                                message='get_block_height 请求, 两个方式均未获取到正常拿. sync: {} number: {}'
                                .format(sync, number))
@@ -146,7 +149,8 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
             return True
         return False
 
-    def send_transaction(self, sender: str, receiver: str, value: int, passphrase: str, gas: int = None,
+    def send_transaction(self, sender: str, receiver: str, value: int, passphrase: str,
+                         gas: int = None,
                          gas_price: int = None, fee: int = None,
                          contract: str = None, comment: str = None, **kwargs):
         """目前只支持单交易发送, 暂时没有想到更好的数据结构"""
@@ -155,7 +159,8 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
             gas = 21000
         if gas_price is None:
             gas_price = digit.hex_to_int(self.gas_price())
-        params = EthereumResolver.get_transfer_body(sender, receiver, int(gas), int(gas_price), value, contract)
+        params = EthereumResolver.get_transfer_body(sender, receiver, int(gas), int(gas_price),
+                                                    value, contract)
         payload = self.get_params(params, passphrase)
         return self._single_post(method, payload, ignore_err=False)
 
@@ -176,7 +181,8 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
         else:
             method = contract_method
             if isinstance(address, (list, tuple, set)):
-                address = [EthereumResolver.get_balance_body(address=addr, contract=contract) for addr in address]
+                address = [EthereumResolver.get_balance_body(address=addr, contract=contract) for
+                           addr in address]
             else:
                 address = EthereumResolver.get_balance_body(address=address, contract=contract)
             params = self.get_params(address, block_height)
@@ -196,7 +202,8 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
         if isinstance(addresses, list):
             addresses = set(addresses)
         else:
-            self.logger.warning("personal_listAccounts address list not is list, it's {}".format(addresses))
+            self.logger.warning(
+                "personal_listAccounts address list not is list, it's {}".format(addresses))
             return 0
         check_addresses = list((exclude ^ addresses) & addresses)
         balance = 0
@@ -211,7 +218,7 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
                     self.logger.error("地址获取余额错误： {}".format(_))
         return balance
 
-    def get_smart_fee(self, confirm_height="latest",  contract=None):
+    def get_smart_fee(self, confirm_height="latest", contract=None):
         method = 'eth_estimateGas'
         if contract is None:
             return digit.int_to_hex(21000)
@@ -226,10 +233,42 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
         func = self.choice_post_func(raw)
         return func(method, self.get_params(raw))
 
+    # def eth_call(self, sender: str, receiver: str, value: int, passphrase: str, gas: int = None,
+    #              gas_price: int = None, fee: int = None,
+    #              contract: str = None, comment: str = None, **kwargs):
+    #     pass
+    #     payload = EthereumResolver.get_transfer_body(sender, receiver, gas, gas_price, value,
+    #                                                  contract)
+
+    def get_contract_info(self, contract) -> tuple:
+        """
+        获取合约资料
+        :param contract:
+        :return: (str name, str, symbol, int decimal, int total)
+        """
+        method = 'eth_call'
+        name = EthereumResolver.get_transfer_template(data=EthereumResolver.get_name_abi(),
+                                                      contract=contract)
+        symbol = EthereumResolver.get_transfer_template(data=EthereumResolver.get_symbol_abi(),
+                                                        contract=contract)
+        decimal = EthereumResolver.get_transfer_template(data=EthereumResolver.get_decimal_abi(),
+                                                         contract=contract)
+        total = EthereumResolver.get_transfer_template(data=EthereumResolver.get_total_abi(),
+                                                       contract=contract)
+        payload = self.get_params([name, symbol, decimal, total], "latest")
+        rsp = self._many_post(method, payload)
+        # name, symbol, decimal, total
+        return (EthereumResolver.parse_abi_name(rsp[0]),
+                EthereumResolver.parse_abi_name(rsp[1]),
+                EthereumResolver.parse_abi_name(rsp[2]),
+                EthereumResolver.parse_abi_name(rsp[3]))
+
 
 if __name__ == '__main__':
     import json
+
     rpc = EthereumRpcBase('http://192.168.10.201:37001')
+    rpc.get_contract_info('0xdac17f958d2ee523a2206206994597c13d831ec7')
     # print(rpc.get_block_height())
     # print(rpc.get_block_by_hash('0x1a2f'))
     # print(rpc.get_block_by_hash(['0x1a2f', '0x9878']))
@@ -245,5 +284,6 @@ if __name__ == '__main__':
 
     # print(rpc.get_wallet_balance())
 
-    blocks = rpc.get_block_by_number([digit.int_to_hex(height) for height in range(5000000, 5000010)])
+    blocks = rpc.get_block_by_number(
+        [digit.int_to_hex(height) for height in range(5000000, 5000010)])
     print(json.dumps(blocks))

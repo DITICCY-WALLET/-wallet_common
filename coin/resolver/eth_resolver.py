@@ -1,6 +1,9 @@
+import re
+
 from coin.coin_tools import Tx, TxReceipt, Block
 from digit import digit
 from enumer.coin_enum import TxStatusEnum
+from sha3 import keccak_256
 
 
 class EthereumResolver(object):
@@ -47,6 +50,63 @@ class EthereumResolver(object):
             "gasPrice": digit.int_to_hex(cls.DEFAULT_GAS_PRICE),
             "data": cls.GET_BALANCE_ABI + cls.get_address(address, contract)
         }
+
+    @classmethod
+    def get_transfer_template(cls, sender=None, receiver=None, value=0, gas=0, gas_price=0,
+                              data="", contract=None):
+        return {
+            "from": cls.get_address(sender),
+            "to": cls.get_address(contract or receiver),
+            "value": digit.int_to_hex(value),
+            "gas": digit.int_to_hex(gas or cls.DEFAULT_GAS),
+            # K M G  -> 10G
+            "gasPrice": digit.int_to_hex(gas_price or cls.DEFAULT_GAS_PRICE),
+            "data": digit.add_0x(data)
+        }
+
+    @classmethod
+    def get_abi(cls, abi_func: bytes or str):
+        if isinstance(abi_func, str):
+            abi_func = abi_func.encode()
+        func, args = [i.strip(b')') for i in abi_func.strip().split(b'(')]
+        func_args = b"%s(%s)" % (
+            func, b','.join([i.strip().split(b' ')[0] for i in args.split(b',')])
+        )
+        return keccak_256(func_args).hexdigest()[:8]
+
+    @classmethod
+    def get_name_abi(cls):
+        return cls.get_abi('name()')
+
+    @classmethod
+    def get_decimal_abi(cls):
+        return cls.get_abi('decimals()')
+
+    @classmethod
+    def get_symbol_abi(cls):
+        return cls.get_abi('symbol()')
+
+    @classmethod
+    def get_total_abi(cls):
+        return cls.get_abi('totalSupply()')
+
+    @classmethod
+    def parse_abi_name(cls, name_abi):
+        name_abi_no0x = digit.del_0x(name_abi)
+        return bytes.fromhex(name_abi_no0x[128:]).strip(b'\x00').decode()
+
+    @classmethod
+    def parse_abi_symbol(cls, symbol_abi):
+        symbol_abi_no0x = digit.del_0x(symbol_abi)
+        return bytes.fromhex(symbol_abi_no0x[128:]).strip(b'\x00').decode()
+
+    @classmethod
+    def parse_abi_decimal(cls, decimal_abi):
+        return digit.hex_to_int(decimal_abi)
+
+    @classmethod
+    def parse_abi_total(cls, total_abi):
+        return digit.hex_to_int(total_abi)
 
     @classmethod
     def get_estimate_gas_body(cls, contract=None):
