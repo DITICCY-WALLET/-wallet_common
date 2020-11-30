@@ -28,5 +28,14 @@ def del_0x(h: str):
     return h
 
 
+def is_number(value: str) -> bool:
+    value_split = value.split('.')
+    if len(value_split) > 2:
+        return False
+    for digit in value_split:
+        if not digit.isdigit():
+            return False
+    return True
+
 
 

@@ -7,6 +7,8 @@ error_msg = {"code": 10, 'msg': "失败"}
 # ***** 数据库错误码 ***** 100 - 120 *****
 data_missing = {"code": 100, 'msg': "数据库缺少必要数据"}
 data_op_fail = {"code": 101, 'msg': "数据库缺少必要数据"}
+data_op_error = {"code": 102, 'msg': "数据操作失败"}
+data_not_found = {"code": 103, 'msg': "根据请求未查询到数据"}
 
 # ***** 响应错误码 *****
 not_found_error = {"code": 404, 'msg': "URL 不存在"}
@@ -47,12 +49,17 @@ passphrase_invalid = {"code": 1107, 'msg': "密码错误"}
 not_support_coin = {"code": 1110, 'msg': "暂不支持该交易币种"}
 coin_support_token = {"code": 1111, 'msg': "币种暂不支持该token"}
 coin_token_error = {"code": 1112, 'msg': "币种信息不正确"}
+coin_token_already_exist = {"code": 1113, 'msg': "币种已存在"}
+coin_token_not_already_exist = {"code": 1113, 'msg': "币种不存在"}
 
 # ***** 项目方有关错误 ***** 1200 - 1299 *****
 project_miss = {"code": 1200, 'msg': "未找到项目方数据"}
 project_passphrase_miss = {"code": 1201, 'msg': "项目未设置任何币种密码, 请先设置币种密码"}
 coin_passphrase_miss = {"code": 1202, 'msg': "当前币种未设置密码, 请先设置币种密码"}
 coin_passphrase_error = {"code": 1203, 'msg': "密码缺少"}
+coin_update_error = {"code": 1204, 'msg': "币种更新失败"}
+address_remove_error = {"code": 1205, 'msg': "地址移除失败, 请检查参数并稍后重试"}
+address_set_error = {"code": 1206, 'msg': "地址设置失败, 请检查参数并稍后重试"}
 
 # ***** 发送交易明确性错误 ***** 1300 - 1399 *****
 send_fee_insufficient = {"code": 1301, 'msg': "手续费不足"}

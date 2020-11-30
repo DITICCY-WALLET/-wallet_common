@@ -31,7 +31,7 @@ except ImportError:
                         'class': 'logging.handlers.TimedRotatingFileHandler',
                         'level': 'INFO',
                         'formatter': 'standard',
-                        'filename': '/var/logs/default.log',
+                        'filename': '/var/logs/apps/default.log',
                         'when': 'D',
                         'interval': 1
                     }

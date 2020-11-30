@@ -151,7 +151,7 @@ class EthereumRpcBase(RpcBase, JsonRpcV2):
 
     def send_transaction(self, sender: str, receiver: str, value: int, passphrase: str,
                          gas: int = None,
-                         gas_price: int = None, fee: int = None,
+                         gas_price: int = None, fee: str = None,
                          contract: str = None, comment: str = None, **kwargs):
         """目前只支持单交易发送, 暂时没有想到更好的数据结构"""
         method = 'personal_signAndSendTransaction'
